@@ -38,7 +38,7 @@ def getData(checkForReptile,animalDict,breakout,threadIncrement):
                 animalDict[firstWord] = [(tempTitle,childPage.summary,childPage.images)]
             else:
                 animalDict[firstWord].append((tempTitle,childPage.summary,childPage.images))
-        except(DisambiguationError,JSONDecodeError):
+        except(DisambiguationError):
             print('Error')
 
         if threadIncrement == 0:
@@ -59,5 +59,3 @@ if __name__ == '__main__':
         thread = threading.Thread(target=getData, args=(animalDatabase,animalDict,i*threadIncrement,threadIncrement))
         arrayOfThreads.append(thread)
         thread.start()
-
-
