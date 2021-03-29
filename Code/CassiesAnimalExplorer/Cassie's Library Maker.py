@@ -1,7 +1,7 @@
 from mediawiki import MediaWiki
 from mediawiki import DisambiguationError
-from json.decoder import JSONDecodeError
 import threading
+import pickle
 wikipedia = MediaWiki()
 
 def getListOfAnimals(title,path,delimiter):
@@ -14,6 +14,7 @@ def getListOfAnimals(title,path,delimiter):
             file.write(delimiter)
     except(UnicodeDecodeError):
         print('continue')
+    file.close()
 
 def importFile(path,delimiter):
     animalDatabase = []
@@ -21,25 +22,30 @@ def importFile(path,delimiter):
     for i in file:
         animalDatabase = i.split(delimiter)
         print(len(animalDatabase))
+    file.close()
     return animalDatabase
-
+def saveDictToFile(dict,filepath):
+    file = open(filepath, "wb")
+    pickle.dump(dict, file)
+    file.close()
 def getData(checkForReptile,animalDict,breakout,threadIncrement):
     finalSize = len(checkForReptile)
     currentSize = 0
-    for i in checkForReptile[breakout:breakout+587]:
+    for i in checkForReptile[breakout:breakout+threadIncrement]:
         try:
             childPage = wikipedia.page(i)
-            tempTitle = childPage.title
-            if ' ' in tempTitle:
-                firstWord = tempTitle[0:tempTitle.find(' ')]
-            else:
-                firstWord = tempTitle
-            if firstWord not in animalDict:
-                animalDict[firstWord] = [(tempTitle,childPage.summary,childPage.images)]
-            else:
-                animalDict[firstWord].append((tempTitle,childPage.summary,childPage.images))
+            if(childPage != None):
+                tempTitle = childPage.title
+                if ' ' in tempTitle:
+                    firstWord = tempTitle[0:tempTitle.find(' ')]
+                else:
+                    firstWord = tempTitle
+                if firstWord not in animalDict:
+                    animalDict[firstWord] = [(tempTitle,childPage.summary,childPage.images)]
+                else:
+                    animalDict[firstWord].append((tempTitle,childPage.summary,childPage.images))
         except(DisambiguationError):
-            print('Error')
+            print('Disambiguation Error')
 
         if threadIncrement == 0:
             break
@@ -47,15 +53,22 @@ def getData(checkForReptile,animalDict,breakout,threadIncrement):
             threadIncrement -= 1
         currentSize += 1
         if(currentSize%100 == 0):
-            print(currentSize,'/',finalSize,sep='')
+            print(currentSize,'/',threadIncrement,sep='')
 
 if __name__ == '__main__':
     #getListOfAnimals('Animals','animalDatabase.txt','#')
     animalDatabase = importFile('animalDatabase.txt','#')
     arrayOfThreads =[]
     animalDict = {}
-    threadIncrement = len(animalDatabase)//500
-    for i in range(500):
+    threadIncrement = len(animalDatabase)//10
+    for i in range(10):
         thread = threading.Thread(target=getData, args=(animalDatabase,animalDict,i*threadIncrement,threadIncrement))
         arrayOfThreads.append(thread)
         thread.start()
+    for i in arrayOfThreads:
+        i.join()
+    count = 0
+    for i in animalDict.keys():
+        count += len(animalDict[i])
+    print(count)
+    saveDictToFile(animalDict,"animalDictionary.txt")
