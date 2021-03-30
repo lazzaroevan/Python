@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image,UnidentifiedImageError
 import tkinter.font as font
 import random
 
@@ -42,31 +42,53 @@ class VerticalScrolledFrame(tk.Frame):
                 canvas.itemconfigure(interior_id, width=canvas.winfo_width())
         canvas.bind('<Configure>', _configure_canvas)
         # This is what enables scrolling with the mouse:
-
-#variables
-#importing list of animals for buttons
 def importAnimalNames(filepath):
     files = os.walk(filepath)
     animalNames = []
     for i in files:
         animalNames.append(i[2])
     return animalNames[0]
-
-def upOrDownPressedFunc(int,upOrDownPressed,animals,animalNames):
+def letterLookup(letter,animalNames,frame,bottomBar):
+    print(letter)
+    startIndex = None
+    endIndex = None
+    for i in range(len(animalNames)):
+        if(animalNames[i][0]==letter):
+            startIndex = i
+        if(startIndex != None):
+            restart(frame,bottomBar,startIndex)
+def upOrDownPressedFunc(int,upOrDownPressed,animalButtons,animalNames):
     if((int == -1) and upOrDownPressed[0]>0):
         upOrDownPressed[0] += int
         print(upOrDownPressed[0])
-    elif(int == 1):
+    elif(int == 1 and (upOrDownPressed[0] < (len(animalNames)-len(animalButtons)))):
         upOrDownPressed[0] += int
         print(upOrDownPressed[0])
-    for i in range(len(animals)):
-        animals[i]['text'] = animalNames[i+upOrDownPressed[0]]
-
-def jumpToLetter(animals,animalNames):
+    for i in range(len(animalButtons)):
+        animalButtons[i]['text'] = animalNames[i+upOrDownPressed[0]]
+def randomAnimal(frame,animalsList,bottomBar,font):
+    randomAnimal = random.randint(0,len(animalsList))
+    animalName = animalsList[randomAnimal]
+    infoShower(frame,animalName,bottomBar,window,font)
+def jumpToLetter(animalButtons,animalNames,frame,bottomBar):
     letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-
-
-
+    fontToUse = font.Font(family='Times New Roman', size=16, weight='bold')
+    bottomBar.destroy()
+    bottomBar = tk.Frame()
+    upOrDownPressedLetters = [0]
+    for i in range(len(animalButtons)):
+        animalButtons[i]['text'] = letters[i+upOrDownPressedLetters[0]]
+        animalButtons[i]['command'] = lambda c=i: letterLookup(animalButtons[c].cget("text"),animalNames,frame,bottomBar)
+    downButton = tk.Button(bottomBar, text='DOWN', height=1, border=10, font=fontToUse,
+                           command=lambda: upOrDownPressedFunc(1, upOrDownPressedLetters, animalButtons, letters))
+    upButton = tk.Button(bottomBar, text='UP', height=1, border=10, font=fontToUse,
+                         command=lambda: upOrDownPressedFunc(-1, upOrDownPressedLetters, animalButtons, letters))
+    backButton = tk.Button(bottomBar, font=fontToUse, text='BACK', height=1, border=10,
+                       command=lambda: restart(frame, bottomBar))
+    upButton.pack(side=tk.LEFT)
+    backButton.pack(side = tk.LEFT)
+    downButton.pack(side=tk.LEFT)
+    bottomBar.pack()
 def infoShower(frame,title,frameToDestroy,window,font):
     print(title)
     file = open('Summaries/'+title,'r',encoding='utf8')
@@ -86,29 +108,19 @@ def infoShower(frame,title,frameToDestroy,window,font):
     button.pack(side='bottom')
     for i in os.walk("Images/"+title):
         for a in i[2]:
-            img = ImageTk.PhotoImage(Image.open('Images/'+title+'/'+a))
-            imageLabel = tk.Label(master = newFrame.interior, image=img)
-            imageLabel.img = img
-            imageLabel.pack(side='bottom', fill='both', expand='yes')
+            try:
+                img = ImageTk.PhotoImage(Image.open('Images/'+title+'/'+a))
+                imageLabel = tk.Label(master = newFrame.interior, image=img)
+                imageLabel.img = img
+                imageLabel.pack(side='bottom', fill='both', expand='yes')
+            except(UnidentifiedImageError):
+                print('imageError')
     bottomBar.pack()
-
-def restart(frame,bottombar):
+def restart(frame,bottombar,start = 0):
     frame.destroy()
     bottombar.destroy()
-    main()
-
-def randomAnimal(frame,animalNames,bottomBar):
-    print('random')
-
-#importing photo database
-
-
-#generating window
-
-
-#frame
-
-def main():
+    main(start)
+def main(startingInt = 0):
     window.minsize(window.winfo_screenwidth(), window.winfo_screenheight())
     window.maxsize(window.winfo_screenwidth(), window.winfo_screenheight())
     window.overrideredirect(1)
@@ -116,28 +128,30 @@ def main():
     window.title("Animal Encyclopedia")
     animalNames = importAnimalNames('Summaries')
     fontToUse = font.Font(family='Times New Roman', size=16, weight='bold')
-    upOrDownPressed = [0]
+    upOrDownPressed = [startingInt]
     animalButtons = []
     frame = tk.Frame()
     bottomBar = tk.Frame()
     randomButton = tk.Button(bottomBar, text='RANDOM', height=1, border=10, font=fontToUse,
-                             command=lambda: randomAnimal(frame, animalNames, bottomBar))
+                             command=lambda: randomAnimal(frame, animalNames, bottomBar,fontToUse))
     downButton = tk.Button(bottomBar, text='DOWN', height=1, border=10, font=fontToUse,
                            command=lambda: upOrDownPressedFunc(1, upOrDownPressed, animalButtons,animalNames))
     upButton = tk.Button(bottomBar, text='UP', height=1, border=10, font=fontToUse,
                          command=lambda: upOrDownPressedFunc(-1, upOrDownPressed, animalButtons,animalNames))
+    searchByLetter = tk.Button(bottomBar, font=fontToUse, text='LETTER SEARCH', height=1, border=10,
+                               command=lambda: jumpToLetter(animalButtons,animalNames, frame,bottomBar))
     for i in range(21):
-        newButton = (tk.Button(master = frame,font=fontToUse, border='5', text=animalNames[i], width=(window.winfo_screenwidth()),
+        newButton = (tk.Button(master = frame,font=fontToUse, border='5', text=animalNames[i+startingInt], width=(window.winfo_screenwidth()),
                                bg='lightblue', fg='black',
                                command=lambda c=i: infoShower(frame, animalButtons[c].cget("text"), bottomBar,window,fontToUse)))
         animalButtons.append(newButton)
         animalButtons[i].pack()
     upButton.pack(side=tk.LEFT)
     randomButton.pack(side=tk.LEFT)
+    searchByLetter.pack(side= tk.LEFT)
     downButton.pack(side=tk.RIGHT)
     frame.pack()
     bottomBar.pack()
     window.mainloop()
-
 if __name__ == '__main__':
     main()
