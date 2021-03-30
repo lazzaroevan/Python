@@ -62,6 +62,11 @@ def upOrDownPressedFunc(int,upOrDownPressed,animals,animalNames):
     for i in range(len(animals)):
         animals[i]['text'] = animalNames[i+upOrDownPressed[0]]
 
+def jumpToLetter(animals,animalNames):
+    letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+
+
+
 def infoShower(frame,title,frameToDestroy,window,font):
     print(title)
     file = open('Summaries/'+title,'r',encoding='utf8')
