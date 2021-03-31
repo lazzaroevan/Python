@@ -115,10 +115,11 @@ def infoShower(frame,title,frameToDestroy,window,font):
     for i in os.walk("Images/"+title):
         for a in i[2]:
             try:
-                img = ImageTk.PhotoImage(Image.open('Images/'+title+'/'+a))
-                imageLabel = tk.Label(master = newFrame.interior, image=img)
-                imageLabel.img = img
-                imageLabel.pack(side='bottom', fill='both', expand='yes')
+                if('Red_Pencil_Icon.png' not in a):
+                    img = ImageTk.PhotoImage(Image.open('Images/'+title+'/'+a))
+                    imageLabel = tk.Label(master = newFrame.interior, image=img)
+                    imageLabel.img = img
+                    imageLabel.pack(side='bottom', fill='both', expand='yes')
             except(UnidentifiedImageError):
                 print('imageError')
     bottomBar.pack()
@@ -146,7 +147,7 @@ def main(startingInt = 0):
     upButton = tk.Button(bottomBar, text='UP', height=1, border=10, font=fontToUse,
                          command=lambda: upOrDownPressedFunc(-1, upOrDownPressed, animalButtons,animalNames,increment))
     searchByLetter = tk.Button(bottomBar, font=fontToUse, text='LETTER SEARCH', height=1, border=10,
-                               command=lambda: jumpToLetter(animalButtons,animalNames, frame,bottomBar))
+                               command=lambda: jumpToLetter(animalButtons,animalNames, frame,bottomBar,increment))
     for i in range(21):
         newButton = (tk.Button(master = frame,font=fontToUse, border='5', text=animalNames[i+startingInt], width=(window.winfo_screenwidth()),
                                bg='lightblue', fg='black',
