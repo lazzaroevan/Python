@@ -57,20 +57,26 @@ def letterLookup(letter,animalNames,frame,bottomBar):
             startIndex = i
         if(startIndex != None):
             restart(frame,bottomBar,startIndex)
-def upOrDownPressedFunc(int,upOrDownPressed,animalButtons,animalNames):
+def upOrDownPressedFunc(int,upOrDownPressed,animalButtons,animalNames,increment):
     if((int == -1) and upOrDownPressed[0]>0):
-        upOrDownPressed[0] += int
+        if(upOrDownPressed[0]-increment>0):
+            upOrDownPressed[0] += -increment
+        else:
+            upOrDownPressed[0]= 0
         print(upOrDownPressed[0])
     elif(int == 1 and (upOrDownPressed[0] < (len(animalNames)-len(animalButtons)))):
-        upOrDownPressed[0] += int
-        print(upOrDownPressed[0])
+        if (upOrDownPressed[0] + increment < (len(animalNames)-len(animalButtons))):
+            upOrDownPressed[0] += increment
+            print(upOrDownPressed[0])
+        else:
+            upOrDownPressed[0]= (len(animalNames)-len(animalButtons))
     for i in range(len(animalButtons)):
         animalButtons[i]['text'] = animalNames[i+upOrDownPressed[0]]
 def randomAnimal(frame,animalsList,bottomBar,font):
     randomAnimal = random.randint(0,len(animalsList))
     animalName = animalsList[randomAnimal]
     infoShower(frame,animalName,bottomBar,window,font)
-def jumpToLetter(animalButtons,animalNames,frame,bottomBar):
+def jumpToLetter(animalButtons,animalNames,frame,bottomBar,increment):
     letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
     fontToUse = font.Font(family='Times New Roman', size=16, weight='bold')
     bottomBar.destroy()
@@ -80,9 +86,9 @@ def jumpToLetter(animalButtons,animalNames,frame,bottomBar):
         animalButtons[i]['text'] = letters[i+upOrDownPressedLetters[0]]
         animalButtons[i]['command'] = lambda c=i: letterLookup(animalButtons[c].cget("text"),animalNames,frame,bottomBar)
     downButton = tk.Button(bottomBar, text='DOWN', height=1, border=10, font=fontToUse,
-                           command=lambda: upOrDownPressedFunc(1, upOrDownPressedLetters, animalButtons, letters))
+                           command=lambda: upOrDownPressedFunc(1, upOrDownPressedLetters, animalButtons, letters,increment))
     upButton = tk.Button(bottomBar, text='UP', height=1, border=10, font=fontToUse,
-                         command=lambda: upOrDownPressedFunc(-1, upOrDownPressedLetters, animalButtons, letters))
+                         command=lambda: upOrDownPressedFunc(-1, upOrDownPressedLetters, animalButtons, letters,increment))
     backButton = tk.Button(bottomBar, font=fontToUse, text='BACK', height=1, border=10,
                        command=lambda: restart(frame, bottomBar))
     upButton.pack(side=tk.LEFT)
@@ -131,13 +137,14 @@ def main(startingInt = 0):
     upOrDownPressed = [startingInt]
     animalButtons = []
     frame = tk.Frame()
+    increment = 20 #number of boxes pressing up or down will move
     bottomBar = tk.Frame()
     randomButton = tk.Button(bottomBar, text='RANDOM', height=1, border=10, font=fontToUse,
                              command=lambda: randomAnimal(frame, animalNames, bottomBar,fontToUse))
     downButton = tk.Button(bottomBar, text='DOWN', height=1, border=10, font=fontToUse,
-                           command=lambda: upOrDownPressedFunc(1, upOrDownPressed, animalButtons,animalNames))
+                           command=lambda: upOrDownPressedFunc(1, upOrDownPressed, animalButtons,animalNames,increment))
     upButton = tk.Button(bottomBar, text='UP', height=1, border=10, font=fontToUse,
-                         command=lambda: upOrDownPressedFunc(-1, upOrDownPressed, animalButtons,animalNames))
+                         command=lambda: upOrDownPressedFunc(-1, upOrDownPressed, animalButtons,animalNames,increment))
     searchByLetter = tk.Button(bottomBar, font=fontToUse, text='LETTER SEARCH', height=1, border=10,
                                command=lambda: jumpToLetter(animalButtons,animalNames, frame,bottomBar))
     for i in range(21):
