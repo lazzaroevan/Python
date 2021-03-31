@@ -138,7 +138,7 @@ def main(startingInt = 0):
     upOrDownPressed = [startingInt]
     animalButtons = []
     frame = tk.Frame()
-    increment = 20 #number of boxes pressing up or down will move
+    increment = 19 #number of boxes pressing up or down will move
     bottomBar = tk.Frame()
     randomButton = tk.Button(bottomBar, text='RANDOM', height=1, border=10, font=fontToUse,
                              command=lambda: randomAnimal(frame, animalNames, bottomBar,fontToUse))
@@ -148,7 +148,7 @@ def main(startingInt = 0):
                          command=lambda: upOrDownPressedFunc(-1, upOrDownPressed, animalButtons,animalNames,increment))
     searchByLetter = tk.Button(bottomBar, font=fontToUse, text='LETTER SEARCH', height=1, border=10,
                                command=lambda: jumpToLetter(animalButtons,animalNames, frame,bottomBar,increment))
-    for i in range(21):
+    for i in range(increment):
         newButton = (tk.Button(master = frame,font=fontToUse, border='5', text=animalNames[i+startingInt], width=(window.winfo_screenwidth()),
                                bg='lightblue', fg='black',
                                command=lambda c=i: infoShower(frame, animalButtons[c].cget("text"), bottomBar,window,fontToUse)))
