@@ -119,7 +119,14 @@ def infoShower(frame,title,frameToDestroy,window,font):
         for a in i[2]:
             try:
                 if('Red_Pencil_Icon.png' not in a):
-                    img = ImageTk.PhotoImage(Image.open('Images/'+title+'/'+a))
+                    #note, resizing the images takes up alot of time and memory, causes long load times
+                    imageToResize = Image.open('Images/'+title+'/'+a)
+                    while (imageToResize.size[0] < (window.winfo_screenwidth()/2)-10):
+                        imageToResize = imageToResize.resize(
+                            (round(imageToResize.size[0] * (1.5)), (round(imageToResize.size[1] * (1.5)))))
+                    while(imageToResize.size[0]>(window.winfo_screenwidth()/2)):
+                        imageToResize = imageToResize.resize((round(imageToResize.size[0]*(.5)),(round(imageToResize.size[1]*(.5)))))
+                    img = ImageTk.PhotoImage(imageToResize)
                     imageLabel = tk.Label(master = newFrame.interior, image=img)
                     imageLabel.img = img
                     imageLabel.pack(side='bottom', fill='both', expand='yes')
