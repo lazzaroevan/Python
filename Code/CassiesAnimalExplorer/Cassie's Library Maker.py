@@ -5,6 +5,11 @@ from mediawiki import DisambiguationError
 import threading
 import pickle
 import os
+
+#Run this file to gather all the data and save it onto your machine.
+# Be cautious though, as there are about 95 gb worth of data gathered by this program
+# most of it is images gathered by lines 76-82
+
 wikipedia = MediaWiki()
 
 def getListOfAnimals(title,path,delimiter):
@@ -88,7 +93,7 @@ def getData(checkForReptile,breakout,threadIncrement,errors):
             print(' Errors:',errors[0])
 
 if __name__ == '__main__':
-    #getListOfAnimals('Animals','animalDatabase.txt','#')
+    getListOfAnimals('Animals','animalDatabase.txt','#')
     animalDatabase = importFile('animalDatabase.txt','#')
     print('Loaded the animal database into ram.......')
     arrayOfThreads =[]

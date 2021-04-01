@@ -1,5 +1,6 @@
 import os
 
+#Use this file to check the number of names in animalDatabase.txt vs the number of files in the summaries folder
 
 def importFile(path,delimiter):
     animalDatabase = []

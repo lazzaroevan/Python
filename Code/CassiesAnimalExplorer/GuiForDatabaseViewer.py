@@ -135,7 +135,6 @@ def restart(frame,bottombar,start = 0):
     for i in _list:
         i.destroy()
     main(animalNames,start)
-
 def setTextBox(letter,textBox):
     text = textBox['text']
     if(letter == 'BACKSPACE'):
@@ -144,7 +143,6 @@ def setTextBox(letter,textBox):
         textBox['text']=letter
     elif(letter != 'BACKSPACE'):
         textBox['text']=text+letter
-
 def keywordSearch(frame,frameToDestroy,window,fontToUse,pixelVirtual):
     frame.destroy()
     frameToDestroy.destroy()
@@ -195,29 +193,27 @@ def keywordSearch(frame,frameToDestroy,window,fontToUse,pixelVirtual):
     qFrame.pack()
     aFrame.pack()
     zFrame.pack()
-
 def main(animalNames,startingInt = 0):
-
     animalNames = importAnimalNames('Summaries')
     fontToUse = font.Font(family='Times New Roman', size=16, weight='bold')
     upOrDownPressed = [startingInt]
     animalButtons = []
     frame = tk.Frame()
     pixelVirtual = tk.PhotoImage(width=0, height=0)
-    increment = 21 #number of boxes pressing up or down will move
+    increment = 20 #number of boxes pressing up or down will move
     bottomBar = tk.Frame()
-    randomButton = tk.Button(bottomBar, text='RANDOM', height=1, border=10, font=fontToUse,
+    randomButton = tk.Button(bottomBar, text='RANDOM', border=5, font=fontToUse,height = window.winfo_screenheight()//21,image=pixelVirtual,compound = 'c',
                              command=lambda: randomAnimal(frame, animalNames, bottomBar,fontToUse))
-    downButton = tk.Button(bottomBar, text='DOWN', height=1, border=10, font=fontToUse,
+    downButton = tk.Button(bottomBar, text='DOWN', border=5, font=fontToUse,height = window.winfo_screenheight()//21,image=pixelVirtual,compound = 'c',
                            command=lambda: upOrDownPressedFunc(1, upOrDownPressed, animalButtons,animalNames,increment))
-    upButton = tk.Button(bottomBar, text='UP', height=1, border=10, font=fontToUse,
+    upButton = tk.Button(bottomBar, text='UP', border=5, font=fontToUse,height = window.winfo_screenheight()//21,image=pixelVirtual,compound = 'c',
                          command=lambda: upOrDownPressedFunc(-1, upOrDownPressed, animalButtons,animalNames,increment))
     '''searchByLetter = tk.Button(bottomBar, font=fontToUse, text='LETTER SEARCH', height=1, border=10,
                                command=lambda: jumpToLetter(animalButtons,animalNames, frame,bottomBar,increment))'''
-    searchByKeyword = tk.Button(bottomBar, font=fontToUse, text='KEYWORD SEARCH', height=1, border=10,
+    searchByKeyword = tk.Button(bottomBar, font=fontToUse, text='KEYWORD SEARCH', border=5,height = window.winfo_screenheight()//21,image=pixelVirtual,compound = 'c',
                                command=lambda: keywordSearch(frame,bottomBar,window,fontToUse,pixelVirtual))
     for i in range(increment):
-        newButton = (tk.Button(master = frame,font=fontToUse, border='5', text=animalNames[i+startingInt], width=(window.winfo_screenwidth()),
+        newButton = (tk.Button(master = frame,font=fontToUse, border='5', text=animalNames[i+startingInt],image=pixelVirtual,height = (window.winfo_screenheight()//29) , width=(window.winfo_screenwidth()),compound = 'c',
                                bg='lightblue', fg='black',
                                command=lambda c=i: infoShower(frame, animalButtons[c].cget("text"), bottomBar,window,fontToUse)))
         animalButtons.append(newButton)
@@ -230,8 +226,6 @@ def main(animalNames,startingInt = 0):
     frame.pack()
     bottomBar.pack()
     window.mainloop()
-
-
 if __name__ == '__main__':
     # stuff i dont want done every time main loop is run
     window.minsize(window.winfo_screenwidth(), window.winfo_screenheight())
