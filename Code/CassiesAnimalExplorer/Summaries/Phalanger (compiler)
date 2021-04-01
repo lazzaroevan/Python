@@ -1,0 +1,2 @@
+Phalanger is a compiler front end for compiling PHP source code into CIL byte-code, which can be further processed by the .NET Framework's just-in-time compiler. The project was started at Charles University and is supported by Microsoft. Phalanger was discontinued in favor of the more modern PeachPie compiler, which utilizes the Roslyn API.
+

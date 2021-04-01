@@ -1,5 +1,4 @@
 import shutil
-
 import requests
 from mediawiki import MediaWiki
 from mediawiki import DisambiguationError
@@ -9,15 +8,15 @@ import os
 wikipedia = MediaWiki()
 
 def getListOfAnimals(title,path,delimiter):
+    print('Getting backlinks.......')
     p = wikipedia.page(title)
     checkForReptile = p.backlinks
+    print('Received backlinks.......')
     file = open(path,'w',encoding = 'utf8')
-    try:
-        for i in checkForReptile:
-            file.write(i)
-            file.write(delimiter)
-    except(UnicodeDecodeError):
-        print('continue')
+    for i in checkForReptile:
+        file.write(i)
+        file.write(delimiter)
+    print('Done writing backlinks to file.......')
     file.close()
 
 def importFile(path,delimiter):
@@ -28,28 +27,45 @@ def importFile(path,delimiter):
         print(len(animalDatabase))
     file.close()
     return animalDatabase
-def saveDictToFile(dict,filepath):
-    file = open(filepath, "wb")
-    pickle.dump(dict, file)
-    file.close()
-def getData(checkForReptile,animalDict,breakout,threadIncrement,errors):
-    finalSize = len(checkForReptile)
+
+def preGetDataFunction():
+    if (os.path.isdir(os.getcwd() + '\\Images')):
+        walk = os.walk(os.getcwd() + '\\Images')
+        for i in walk:
+            for b in i[1]:
+                path = i[0]+ '/' + b
+                if(path != ''):
+                    walk = os.walk(path)
+                    for a in walk:
+                        for x in a[2]:
+                            os.remove(a[0]+'\\'+x)
+                os.rmdir(path)
+        os.rmdir(os.getcwd()+'\\Images')
+    if (os.path.isdir(os.getcwd() + '\\Summaries')):
+        walk = os.walk(os.getcwd() + '\\Summaries')
+        for i in walk:
+            path = i[0].join(i[2])
+            if (path != ''):
+                for a in i[2]:
+                    os.remove(i[0]+'\\'+a)
+        os.rmdir(os.getcwd()+'\\Summaries')
+    os.mkdir(os.getcwd() + '\\Images')
+    os.mkdir(os.getcwd() + '\\Summaries')
+
+def getData(checkForReptile,breakout,threadIncrement,errors):
     currentSize = 0
-    for i in checkForReptile[breakout:breakout+threadIncrement]:
+    breakVariable = threadIncrement
+    for i in checkForReptile[breakout:(breakout+threadIncrement)]:
         try:
+            count = 0
             childPage = wikipedia.page(i)
             if(childPage != None):
                 tempTitle = childPage.title
-                if ' ' in tempTitle:
-                    firstWord = tempTitle[0:tempTitle.find(' ')]
+                if(os.path.isdir(os.getcwd()+'\\Images\\' + tempTitle)):
+                    print('',sep='',end='')
                 else:
-                    firstWord = tempTitle
-                if firstWord not in animalDict:
-                    animalDict[firstWord] = [tempTitle]
-                else:
-                    animalDict[firstWord].append(tempTitle)
-                os.mkdir(os.getcwd()+'/Images/' + tempTitle)
-                file = open('Summaries/'+ tempTitle,'w',encoding='utf8')
+                    os.mkdir(os.getcwd()+'\\Images\\' + tempTitle)
+                file = open('Summaries\\'+ tempTitle,'w',encoding='utf8')
                 file.write(childPage.summary)
                 file.close()
                 for i in childPage.images:
@@ -57,36 +73,38 @@ def getData(checkForReptile,animalDict,breakout,threadIncrement,errors):
                     r = requests.get(i, stream=True)
                     if r.status_code == 200:
                         r.raw.decode_content = True
-                        with open(os.getcwd()+'/Images/' + tempTitle+ '/' + filename, 'wb') as f:
+                        with open(os.getcwd()+'\\Images\\' + tempTitle+ '/' + filename+str(count), 'wb') as f:
                             shutil.copyfileobj(r.raw, f)
-                    else:
-                       errors[0] += 1
-        except(DisambiguationError,FileExistsError):
+                    count += 1
+        except(DisambiguationError,OSError):
             errors[0] += 1
-        if threadIncrement == 0:
+        if breakVariable == 0:
             break
         else:
-            threadIncrement -= 1
+            breakVariable -= 1
         currentSize += 1
         if(currentSize%100 == 0):
             print(currentSize,'/',threadIncrement,sep='',end='')
-            print('Errors:',errors[0])
+            print(' Errors:',errors[0])
 
 if __name__ == '__main__':
     #getListOfAnimals('Animals','animalDatabase.txt','#')
     animalDatabase = importFile('animalDatabase.txt','#')
+    print('Loaded the animal database into ram.......')
     arrayOfThreads =[]
     animalDict = {}
+    print('Preping work environment.......')
+    preGetDataFunction()
+    print('Establishing threads.......')
     threadIncrement = len(animalDatabase)//13
     errors = [0]
     for i in range(13):
-        thread = threading.Thread(target=getData, args=(animalDatabase,animalDict,i*threadIncrement,threadIncrement,errors))
+        thread = threading.Thread(target=getData, args=(animalDatabase,i*threadIncrement,threadIncrement,errors))
         arrayOfThreads.append(thread)
         thread.start()
+        print('Thread',i,'has started.......')
+    print('All threads created.......')
     for i in arrayOfThreads:
         i.join()
-    count = 0
-    for i in animalDict.keys():
-        count += len(animalDict[i])
-    print(count)
-    saveDictToFile(animalDict,"animalDictionary.txt")
+    print('Threads complete.......')
+    print('Enjoy!')

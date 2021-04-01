@@ -4,7 +4,9 @@ from PIL import ImageTk, Image,UnidentifiedImageError
 import tkinter.font as font
 import random
 
+#needs to be here
 window = tk.Tk()
+
 #class
 class VerticalScrolledFrame(tk.Frame):
     def __init__(self, parent, *args, **kw):
@@ -48,12 +50,13 @@ def importAnimalNames(filepath):
     for i in files:
         animalNames.append(i[2])
     return animalNames[0]
-def letterLookup(letter,animalNames,frame,bottomBar):
+def letterLookup(letter,animalNames,frame,bottomBar,endSearch = 0):
     print(letter)
     startIndex = None
     endIndex = None
     for i in range(len(animalNames)):
-        if(animalNames[i][0]==letter):
+        word = str.upper(animalNames[i][0:endSearch])
+        if(word==letter):
             startIndex = i
         if(startIndex != None):
             restart(frame,bottomBar,startIndex)
@@ -124,21 +127,84 @@ def infoShower(frame,title,frameToDestroy,window,font):
                 print('imageError')
     bottomBar.pack()
 def restart(frame,bottombar,start = 0):
+    _list = window.winfo_children()
+    for item in _list:
+        if item.winfo_children():
+            _list.extend(item.winfo_children())
+    window.wm_frame()
+    for i in _list:
+        i.destroy()
+    main(animalNames,start)
+
+def setTextBox(letter,textBox):
+    text = textBox['text']
+    if(letter == 'BACKSPACE'):
+        textBox['text'] = text[0:-1]
+    elif(text == ''):
+        textBox['text']=letter
+    elif(letter != 'BACKSPACE'):
+        textBox['text']=text+letter
+
+def keywordSearch(frame,frameToDestroy,window,fontToUse,pixelVirtual):
     frame.destroy()
-    bottombar.destroy()
-    main(start)
-def main(startingInt = 0):
-    window.minsize(window.winfo_screenwidth(), window.winfo_screenheight())
-    window.maxsize(window.winfo_screenwidth(), window.winfo_screenheight())
-    window.overrideredirect(1)
-    window.resizable(0, 0)
-    window.title("Animal Encyclopedia")
+    frameToDestroy.destroy()
+    entryFrame = tk.Frame()
+    displayFont = font.Font(family='Times New Roman', size=30, weight='bold')
+    entry = tk.Label(entryFrame,font = displayFont,width = window.winfo_screenwidth())
+    qList = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P']
+    aList = ['A','S','D','F','G','H','J','K','L']
+    zList = ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+    buttonSize = ((window.winfo_screenwidth()//len(qList)-20),window.winfo_screenheight()//4)
+    qLetters = []
+    aLetters = []
+    zLetters = []
+    bottomBar = tk.Frame()
+    qFrame = tk.Frame()
+    aFrame = tk.Frame()
+    zFrame = tk.Frame()
+    for i in range(len(qList)):
+        newButton = (tk.Button(master=qFrame,font=fontToUse,width = buttonSize[0],height = buttonSize[1],text=qList[i],image=pixelVirtual,compound = tk.CENTER, border=5,
+                               bg='lightblue', fg='black',
+                               command=lambda c=i: setTextBox(qLetters[c].cget("text"),entry)))
+        qLetters.append(newButton)
+        qLetters[i].pack(side = tk.LEFT)
+    for i in range(len(aList)):
+        newButton = (
+            tk.Button(master=aFrame, font=fontToUse, border=5, text=aList[i],width = buttonSize[0],height = buttonSize[1],image=pixelVirtual,compound = 'c',
+                      bg='lightblue', fg='black',
+                      command=lambda c=i: setTextBox(aLetters[c].cget("text"),entry)))
+        aLetters.append(newButton)
+        aLetters[i].pack(side = tk.LEFT)
+    for i in range(len(zList)):
+        newButton = (tk.Button(master = zFrame,font=fontToUse, border=5, text=zList[i],width = buttonSize[0],height = buttonSize[1],image=pixelVirtual,compound = 'c',
+                               bg='lightblue', fg='black',
+                               command=lambda c=i: setTextBox(zLetters[c].cget("text"),entry)))
+        zLetters.append(newButton)
+        zLetters[i].pack(side = tk.LEFT)
+    backSpace = (tk.Button(master=entryFrame, font=fontToUse, border=5, text='BACKSPACE',width = buttonSize[0],height = buttonSize[1],image=pixelVirtual,compound = 'c',
+                           bg='lightblue', fg='black',
+                           command=lambda c=i: setTextBox('BACKSPACE', entry)))
+    enterButton = (tk.Button(master=entryFrame, font=fontToUse, border=5, text='ENTER', width=buttonSize[0],
+                           height=buttonSize[1], image=pixelVirtual, compound='c',
+                           bg='lightblue', fg='black',
+                           command=lambda c=i:letterLookup(entry['text'],animalNames,frame,bottomBar,len(entry['text'])) ))
+    backSpace.pack(side = tk.RIGHT)
+    enterButton.pack(side = tk.RIGHT)
+    entry.pack()
+    entryFrame.pack()
+    qFrame.pack()
+    aFrame.pack()
+    zFrame.pack()
+
+def main(animalNames,startingInt = 0):
+
     animalNames = importAnimalNames('Summaries')
     fontToUse = font.Font(family='Times New Roman', size=16, weight='bold')
     upOrDownPressed = [startingInt]
     animalButtons = []
     frame = tk.Frame()
-    increment = 19 #number of boxes pressing up or down will move
+    pixelVirtual = tk.PhotoImage(width=0, height=0)
+    increment = 21 #number of boxes pressing up or down will move
     bottomBar = tk.Frame()
     randomButton = tk.Button(bottomBar, text='RANDOM', height=1, border=10, font=fontToUse,
                              command=lambda: randomAnimal(frame, animalNames, bottomBar,fontToUse))
@@ -146,8 +212,10 @@ def main(startingInt = 0):
                            command=lambda: upOrDownPressedFunc(1, upOrDownPressed, animalButtons,animalNames,increment))
     upButton = tk.Button(bottomBar, text='UP', height=1, border=10, font=fontToUse,
                          command=lambda: upOrDownPressedFunc(-1, upOrDownPressed, animalButtons,animalNames,increment))
-    searchByLetter = tk.Button(bottomBar, font=fontToUse, text='LETTER SEARCH', height=1, border=10,
-                               command=lambda: jumpToLetter(animalButtons,animalNames, frame,bottomBar,increment))
+    '''searchByLetter = tk.Button(bottomBar, font=fontToUse, text='LETTER SEARCH', height=1, border=10,
+                               command=lambda: jumpToLetter(animalButtons,animalNames, frame,bottomBar,increment))'''
+    searchByKeyword = tk.Button(bottomBar, font=fontToUse, text='KEYWORD SEARCH', height=1, border=10,
+                               command=lambda: keywordSearch(frame,bottomBar,window,fontToUse,pixelVirtual))
     for i in range(increment):
         newButton = (tk.Button(master = frame,font=fontToUse, border='5', text=animalNames[i+startingInt], width=(window.winfo_screenwidth()),
                                bg='lightblue', fg='black',
@@ -156,10 +224,20 @@ def main(startingInt = 0):
         animalButtons[i].pack()
     upButton.pack(side=tk.LEFT)
     randomButton.pack(side=tk.LEFT)
-    searchByLetter.pack(side= tk.LEFT)
+    #searchByLetter.pack(side= tk.LEFT)
+    searchByKeyword.pack(side=tk.LEFT)
     downButton.pack(side=tk.RIGHT)
     frame.pack()
     bottomBar.pack()
     window.mainloop()
+
+
 if __name__ == '__main__':
-    main()
+    # stuff i dont want done every time main loop is run
+    window.minsize(window.winfo_screenwidth(), window.winfo_screenheight())
+    window.maxsize(window.winfo_screenwidth(), window.winfo_screenheight())
+    window.overrideredirect(1)
+    window.resizable(0, 0)
+    window.title("Animal Encyclopedia")
+    animalNames = importAnimalNames('Summaries')
+    main(animalNames = animalNames)
