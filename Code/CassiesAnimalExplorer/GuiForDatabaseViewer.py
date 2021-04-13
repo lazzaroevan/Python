@@ -49,17 +49,32 @@ def importAnimalNames(filepath):
     animalNames = []
     for i in files:
         animalNames.append(i[2])
+    animalNames[0].sort()
     return animalNames[0]
 def letterLookup(letter,animalNames,frame,bottomBar,endSearch = 0):
     print(letter)
+    letter = str.upper(letter)
     startIndex = None
     endIndex = None
-    for i in range(len(animalNames)):
+    lowerBound=0
+    upperBound = len(animalNames)
+    while(upperBound>lowerBound+1):
+        probe = lowerBound + round((upperBound-lowerBound)/2)
+        firstCheckString = str.upper(animalNames[probe][:endSearch])
+        secondCheckString = str.upper(animalNames[probe])
+        if(secondCheckString ==  letter):
+            restart(frame,bottomBar,probe)
+        if(secondCheckString < letter):
+            lowerBound = probe
+        elif(secondCheckString > letter):
+            upperBound = probe
+    restart(frame, bottomBar, probe)
+    '''for i in range(len(animalNames)):
         word = str.upper(animalNames[i][0:endSearch])
         if(word==letter):
             startIndex = i
         if(startIndex != None):
-            restart(frame,bottomBar,startIndex)
+            restart(frame,bottomBar,startIndex)'''
 def upOrDownPressedFunc(int,upOrDownPressed,animalButtons,animalNames,increment):
     if((int == -1) and upOrDownPressed[0]>0):
         if(upOrDownPressed[0]-increment>0):
@@ -100,7 +115,7 @@ def jumpToLetter(animalButtons,animalNames,frame,bottomBar,increment):
     bottomBar.pack()
 def infoShower(frame,title,frameToDestroy,window,font):
     print(title)
-    file = open('Summaries/'+title,'r',encoding='utf8')
+    file = open(os.getcwd()+'/'+'Summaries/'+title,'r',encoding='utf8')
     string = title + '\n'
     for i in file:
         string += i
@@ -115,16 +130,16 @@ def infoShower(frame,title,frameToDestroy,window,font):
     button = tk.Button(bottomBar, font=fontToUse, text='BACK', height=30, border=10,
                        command=lambda: restart(newFrame, bottomBar))
     button.pack(side='bottom')
-    for i in os.walk("Images/"+title):
+    for i in os.walk(os.getcwd()+'/'+"Images/"+title):
         for a in i[2]:
             try:
                 if('Red_Pencil_Icon.png' not in a):
                     #note, resizing the images takes up alot of time and memory, causes long load times
-                    imageToResize = Image.open('Images/'+title+'/'+a)
+                    imageToResize = Image.open(os.getcwd()+'/'+'Images/'+title+'/'+a)
                     while (imageToResize.size[0] < (window.winfo_screenwidth()/2)-10):
                         imageToResize = imageToResize.resize(
                             (round(imageToResize.size[0] * (1.5)), (round(imageToResize.size[1] * (1.5)))))
-                    while(imageToResize.size[0]>(window.winfo_screenwidth()/2)):
+                    while(imageToResize.size[0]>(window.winfo_screenwidth())):
                         imageToResize = imageToResize.resize((round(imageToResize.size[0]*(.5)),(round(imageToResize.size[1]*(.5)))))
                     img = ImageTk.PhotoImage(imageToResize)
                     imageLabel = tk.Label(master = newFrame.interior, image=img)
@@ -159,7 +174,7 @@ def keywordSearch(frame,frameToDestroy,window,fontToUse,pixelVirtual):
     qList = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P']
     aList = ['A','S','D','F','G','H','J','K','L']
     zList = ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
-    buttonSize = ((window.winfo_screenwidth()//len(qList)-20),window.winfo_screenheight()//4)
+    buttonSize = ((window.winfo_screenwidth()//len(qList)-40),window.winfo_screenheight()//6)
     qLetters = []
     aLetters = []
     zLetters = []
@@ -186,11 +201,10 @@ def keywordSearch(frame,frameToDestroy,window,fontToUse,pixelVirtual):
                                command=lambda c=i: setTextBox(zLetters[c].cget("text"),entry)))
         zLetters.append(newButton)
         zLetters[i].pack(side = tk.LEFT)
-    backSpace = (tk.Button(master=entryFrame, font=fontToUse, border=5, text='BACKSPACE',width = buttonSize[0],height = buttonSize[1],image=pixelVirtual,compound = 'c',
+    backSpace = (tk.Button(master=entryFrame, font=fontToUse, border=5, text='BACKSPACE',
                            bg='lightblue', fg='black',
                            command=lambda c=i: setTextBox('BACKSPACE', entry)))
-    enterButton = (tk.Button(master=entryFrame, font=fontToUse, border=5, text='ENTER', width=buttonSize[0],
-                           height=buttonSize[1], image=pixelVirtual, compound='c',
+    enterButton = (tk.Button(master=entryFrame, font=fontToUse, border=5, text='ENTER',
                            bg='lightblue', fg='black',
                            command=lambda c=i:letterLookup(entry['text'],animalNames,frame,bottomBar,len(entry['text'])) ))
     backSpace.pack(side = tk.RIGHT)
@@ -201,13 +215,12 @@ def keywordSearch(frame,frameToDestroy,window,fontToUse,pixelVirtual):
     aFrame.pack()
     zFrame.pack()
 def main(animalNames,startingInt = 0):
-    animalNames = importAnimalNames('Summaries')
     fontToUse = font.Font(family='Times New Roman', size=16, weight='bold')
     upOrDownPressed = [startingInt]
     animalButtons = []
     frame = tk.Frame()
     pixelVirtual = tk.PhotoImage(width=0, height=0)
-    increment = 20 #number of boxes pressing up or down will move
+    increment = 11 #number of boxes pressing up or down will move
     bottomBar = tk.Frame()
     randomButton = tk.Button(bottomBar, text='RANDOM', border=5, font=fontToUse,height = window.winfo_screenheight()//21,image=pixelVirtual,compound = 'c',
                              command=lambda: randomAnimal(frame, animalNames, bottomBar,fontToUse))
@@ -219,6 +232,9 @@ def main(animalNames,startingInt = 0):
                                command=lambda: jumpToLetter(animalButtons,animalNames, frame,bottomBar,increment))'''
     searchByKeyword = tk.Button(bottomBar, font=fontToUse, text='KEYWORD SEARCH', border=5,height = window.winfo_screenheight()//21,image=pixelVirtual,compound = 'c',
                                command=lambda: keywordSearch(frame,bottomBar,window,fontToUse,pixelVirtual))
+    exitButton = tk.Button(bottomBar, font=fontToUse, text='EXIT', border=5,
+                                height=window.winfo_screenheight() // 21, image=pixelVirtual, compound='c',
+                                command=lambda :window.destroy())
     for i in range(increment):
         newButton = (tk.Button(master = frame,font=fontToUse, border='5', text=animalNames[i+startingInt],image=pixelVirtual,height = (window.winfo_screenheight()//29) , width=(window.winfo_screenwidth()),compound = 'c',
                                bg='lightblue', fg='black',
@@ -229,6 +245,7 @@ def main(animalNames,startingInt = 0):
     randomButton.pack(side=tk.LEFT)
     #searchByLetter.pack(side= tk.LEFT)
     searchByKeyword.pack(side=tk.LEFT)
+    exitButton.pack(side=tk.RIGHT)
     downButton.pack(side=tk.RIGHT)
     frame.pack()
     bottomBar.pack()
@@ -240,5 +257,5 @@ if __name__ == '__main__':
     window.overrideredirect(1)
     window.resizable(0, 0)
     window.title("Animal Encyclopedia")
-    animalNames = importAnimalNames('Summaries')
+    animalNames = importAnimalNames(os.getcwd()+'/'+'Summaries')
     main(animalNames = animalNames)
